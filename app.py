@@ -9,10 +9,10 @@ import sys
 import time
 import ctypes
 import tkinter as tk
+from ctypes import wintypes
 from typing import Optional, Tuple, List
 import win32gui
 import win32con
-import win32com.client
 from PIL import Image, ImageTk, ImageDraw
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -64,56 +64,107 @@ class RateLimiter:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 class FolderWatcher:
-    def __init__(self):
-        self.shell = None
-    
-    def init_shell(self):
-        if self.shell is None:
-            try:
-                self.shell = win32com.client.Dispatch("Shell.Application")
-            except:
-                pass
-    
-    def find_target(self) -> Optional[int]:
-        self.init_shell()
-        if not self.shell:
-            return None
+    TARGET_CLASSES = ("CabinetWClass", "ExploreWClass")
+
+    def is_target(self, hwnd: int) -> bool:
         try:
-            for i in range(self.shell.Windows().Count):
-                try:
-                    w = self.shell.Windows().Item(i)
-                    if w and getattr(w, "FullName", None):
-                        if "explorer" in str(w.FullName).lower():
-                            return w.HWND
-                except:
-                    continue
+            return win32gui.GetClassName(hwnd) in self.TARGET_CLASSES
         except:
-            self.shell = None
-        return None
-    
+            return False
+
+    def _visible_targets(self) -> List[int]:
+        found = []
+
+        def collect(hwnd, _):
+            if win32gui.IsWindowVisible(hwnd) and self.is_target(hwnd):
+                found.append(hwnd)
+            return True
+
+        try:
+            win32gui.EnumWindows(collect, None)
+        except:
+            pass
+        return found
+
+    def find_target(self) -> Optional[int]:
+        targets = self._visible_targets()
+        return targets[0] if targets else None
+
+    def conceal(self, hwnd: int):
+        try:
+            style = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
+            win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, style | win32con.WS_EX_LAYERED)
+            win32gui.SetLayeredWindowAttributes(hwnd, 0, 0, win32con.LWA_ALPHA)
+        except:
+            pass
+
     def hide_and_close(self, hwnd: int):
         try:
             win32gui.ShowWindow(hwnd, win32con.SW_HIDE)
             win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
         except:
             pass
-    
+
     def close_all_targets(self):
-        self.init_shell()
-        if not self.shell:
+        for hwnd in self._visible_targets():
+            self.hide_and_close(hwnd)
+
+WINEVENTPROC = ctypes.WINFUNCTYPE(
+    None, wintypes.HANDLE, wintypes.DWORD, wintypes.HWND,
+    wintypes.LONG, wintypes.LONG, wintypes.DWORD, wintypes.DWORD
+)
+
+user32 = ctypes.windll.user32
+user32.SetWinEventHook.restype = wintypes.HANDLE
+user32.SetWinEventHook.argtypes = [
+    wintypes.DWORD, wintypes.DWORD, wintypes.HMODULE, WINEVENTPROC,
+    wintypes.DWORD, wintypes.DWORD, wintypes.DWORD
+]
+user32.UnhookWinEvent.argtypes = [wintypes.HANDLE]
+user32.MsgWaitForMultipleObjects.argtypes = [
+    wintypes.DWORD, ctypes.c_void_p, wintypes.BOOL, wintypes.DWORD, wintypes.DWORD
+]
+
+class ExplorerHook:
+    EVENT_OBJECT_CREATE = 0x8000
+    EVENT_OBJECT_SHOW = 0x8002
+    OBJID_WINDOW = 0
+    WINEVENT_OUTOFCONTEXT = 0x0000
+    WINEVENT_SKIPOWNPROCESS = 0x0002
+    QS_ALLINPUT = 0x04FF
+
+    def __init__(self, watcher: FolderWatcher, is_authorized, on_blocked):
+        self.watcher = watcher
+        self.is_authorized = is_authorized
+        self.on_blocked = on_blocked
+        self._proc = WINEVENTPROC(self._callback)
+        self.handle = user32.SetWinEventHook(
+            self.EVENT_OBJECT_CREATE, self.EVENT_OBJECT_SHOW, None, self._proc, 0, 0,
+            self.WINEVENT_OUTOFCONTEXT | self.WINEVENT_SKIPOWNPROCESS
+        )
+
+    def _callback(self, hook, event, hwnd, id_object, id_child, thread, event_time):
+        if event not in (self.EVENT_OBJECT_CREATE, self.EVENT_OBJECT_SHOW):
+            return
+        if id_object != self.OBJID_WINDOW or not hwnd:
             return
         try:
-            for i in range(self.shell.Windows().Count):
-                try:
-                    w = self.shell.Windows().Item(i)
-                    if w and getattr(w, "FullName", None):
-                        if "explorer" in str(w.FullName).lower():
-                            win32gui.ShowWindow(w.HWND, win32con.SW_HIDE)
-                            win32gui.PostMessage(w.HWND, win32con.WM_CLOSE, 0, 0)
-                except:
-                    continue
+            if not self.watcher.is_target(hwnd) or self.is_authorized():
+                return
+            self.watcher.conceal(hwnd)
+            self.watcher.hide_and_close(hwnd)
+            self.on_blocked()
         except:
-            self.shell = None
+            pass
+
+    def wait(self, timeout_ms: int):
+        user32.MsgWaitForMultipleObjects(0, None, False, timeout_ms, self.QS_ALLINPUT)
+        win32gui.PumpWaitingMessages()
+
+    def stop(self):
+        if self.handle:
+            user32.UnhookWinEvent(self.handle)
+            self.handle = None
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # AUTH MODAL
@@ -430,7 +481,26 @@ class ExplorerLock:
         self.authenticated = False
         self.auth_time = 0
         self.showing_modal = False
-    
+        self.blocked = False
+        self.hook = ExplorerHook(self.watcher, lambda: self.authenticated, self._on_blocked)
+
+    def _on_blocked(self):
+        self.blocked = True
+
+    def _prompt(self):
+        self.showing_modal = True
+        modal = AuthModal(self.limiter, self.password, self.watcher)
+        ok = modal.show()
+        self.showing_modal = False
+        self.blocked = False
+
+        if ok:
+            self.authenticated = True
+            self.auth_time = time.time()
+            print("🔓 Access granted")
+        else:
+            print("🔒 Access denied")
+
     def run(self):
         print("╔════════════════════════════════════════════╗")
         print("║            EXPLORER LOCK ACTIVE            ║")
@@ -439,46 +509,38 @@ class ExplorerLock:
         print("║  Press Ctrl+C to exit                      ║")
         print("╚════════════════════════════════════════════╝")
         
+        if not self.hook.handle:
+            print("⚠ Event hook unavailable, falling back to polling")
+
         while True:
             try:
-                if self.showing_modal:
-                    time.sleep(0.05)
-                    continue
-                
+                self.hook.wait(50)
+
                 hwnd = self.watcher.find_target()
-                
-                if hwnd:
-                    if not self.authenticated:
-                        self.watcher.hide_and_close(hwnd)
-                        time.sleep(0.05)
-                        
-                        self.showing_modal = True
-                        modal = AuthModal(self.limiter, self.password, self.watcher)
-                        ok = modal.show()
-                        self.showing_modal = False
-                        
-                        if ok:
-                            self.authenticated = True
-                            self.auth_time = time.time()
-                            print("🔓 Access granted")
-                        else:
-                            print("🔒 Access denied")
-                    else:
+
+                if self.authenticated:
+                    if hwnd:
                         self.auth_time = time.time()
-                else:
-                    if self.authenticated:
-                        if time.time() - self.auth_time > Config.GRACE_PERIOD:
-                            self.authenticated = False
-                            print("🔒 Protection re-armed")
-                
-                time.sleep(0.05)
-                
+                    elif time.time() - self.auth_time > Config.GRACE_PERIOD:
+                        self.authenticated = False
+                        print("🔒 Protection re-armed")
+                    continue
+
+                if hwnd:
+                    self.watcher.close_all_targets()
+                    self.blocked = True
+
+                if self.blocked:
+                    self._prompt()
+
             except KeyboardInterrupt:
                 print("\n👋 Stopped")
                 break
             except Exception as e:
                 print(f"⚠ {e}")
                 time.sleep(0.3)
+
+        self.hook.stop()
 
 def main():
     try:
