@@ -1,6 +1,6 @@
 """
 ╔═════════════════════════════════════════════════════════════════════╗
-║                           AETHER GUARD                              ║
+║                           EXPLORER LOCK                             ║
 ╚═════════════════════════════════════════════════════════════════════╝
 """
 
@@ -169,7 +169,7 @@ class AuthModal:
         
         self.root = tk.Tk()
         self.root.withdraw()
-        self.root.title("Aether Guard")
+        self.root.title("Explorer Lock")
         self.root.overrideredirect(True)
         self.root.attributes("-topmost", True)
         self.root.configure(bg=self.BG)
@@ -251,7 +251,7 @@ class AuthModal:
             shield.pack(pady=(10, 5))
         
         title = tk.Label(
-            content, text="AETHER GUARD",
+            content, text="EXPLORER LOCK",
             font=("Segoe UI", 16, "bold"), bg=self.CARD, fg=self.TEXT
         )
         title.pack(pady=(0, 5))
@@ -421,7 +421,7 @@ class AuthModal:
 # MAIN APPLICATION
 # ═══════════════════════════════════════════════════════════════════════════════
 
-class AetherGuard:
+class ExplorerLock:
     def __init__(self):
         self.limiter = RateLimiter()
         self.watcher = FolderWatcher()
@@ -432,7 +432,7 @@ class AetherGuard:
     
     def run(self):
         print("╔════════════════════════════════════════════╗")
-        print("║             AETHER GUARD ACTIVE            ║")
+        print("║            EXPLORER LOCK ACTIVE            ║")
         print("╠════════════════════════════════════════════╣")
         print("║  ALL FOLDERS PROTECTED                     ║")
         print("║  Press Ctrl+C to exit                      ║")
@@ -488,7 +488,7 @@ def main():
         print("⚠ Already running!")
         return
     
-    AetherGuard().run()
+    ExplorerLock().run()
 
 if __name__ == "__main__":
     main()
