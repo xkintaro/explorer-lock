@@ -129,6 +129,7 @@ class AuthModal:
     TEXT = '#fafafa'
     TEXT_DIM = '#757575'
     BORDER = '#2a2a2a'
+    FRAME = '#c62828'
     LOGO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mascot.png")
     
     def __init__(self, limiter: RateLimiter, password: str, watcher: FolderWatcher):
@@ -182,7 +183,7 @@ class AuthModal:
         y = (sh - H) // 2
         self.root.geometry(f"{W}x{H}+{x}+{y}")
         
-        outer = tk.Frame(self.root, bg=self.ACCENT, padx=1, pady=1)
+        outer = tk.Frame(self.root, bg=self.FRAME, padx=1, pady=1)
         outer.pack(fill="both", expand=True)
         
         card = tk.Frame(outer, bg=self.CARD)
@@ -270,7 +271,7 @@ class AuthModal:
         
         self.entry = tk.Entry(
             input_inner, show="●", font=("Consolas", 13),
-            bg=self.INPUT_BG, fg=self.TEXT, insertbackground=self.ACCENT,
+            bg=self.INPUT_BG, fg=self.TEXT, insertbackground=self.FRAME,
             relief="flat", bd=0
         )
         self.entry.pack(side="left", fill="x", expand=True)
