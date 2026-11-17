@@ -35,11 +35,11 @@
   <br />
 </div>
 
+<img src="preview.jpg" width="100%" />
+
 ## <a id="warning"></a> ⚠️ Warning
 
 This project was previously published as **Aether Guard**. It has been renamed to **Explorer Lock** to better describe what it does. As part of this change, the Aether logo was replaced with a new logo, the border and input cursor of the password window were changed from green to red, and the background launcher was renamed to `run-explorer-lock.vbs`.
-
-<img src="preview.jpg" width="100%" />
 
 ## <a id="about"></a> 📋 About
 

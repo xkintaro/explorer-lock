@@ -35,11 +35,11 @@
   <br />
 </div>
 
+<img src="preview.jpg" width="100%" />
+
 ## <a id="warning"></a> ⚠️ Uyarı
 
 Bu proje daha önce **Aether Guard** adıyla yayınlanıyordu. Ne işe yaradığını daha iyi anlatması için adı **Explorer Lock** olarak değiştirildi. Bu değişiklikle birlikte Aether logosu yeni logoyla değiştirildi, şifre penceresinin kenarlığı ve giriş imleci yeşilden kırmızıya çevrildi, arka planda başlatma dosyasının adı da `run-explorer-lock.vbs` oldu.
-
-<img src="preview.jpg" width="100%" />
 
 ## <a id="about"></a> 📋 Hakkında
 
