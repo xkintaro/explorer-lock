@@ -129,7 +129,7 @@ class AuthModal:
     TEXT = '#fafafa'
     TEXT_DIM = '#757575'
     BORDER = '#2a2a2a'
-    LOGO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logo.png")
+    LOGO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mascot.png")
     
     def __init__(self, limiter: RateLimiter, password: str, watcher: FolderWatcher):
         self.limiter = limiter
