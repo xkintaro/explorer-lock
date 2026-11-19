@@ -90,7 +90,6 @@ Doğru şifreyi girdikten sonra Dosya Gezgini'ni özgürce kullanabilirsiniz. So
 ### Kullanım
 
 - Uygulamayı konsol penceresiyle başlatmak için `run.bat`, arka planda başlatmak için `run-explorer-lock.vbs` dosyasını çalıştırın.
-- `run-explorer-lock.vbs` uygulamayı `C:\explorer-lock` klasöründen başlatır, bu yüzden kullanmak için projeyi bu klasöre klonlayın. Uygulamanın Windows açılırken otomatik başlaması için `Win+R` tuşlarına basın, `shell:startup` yazın ve açılan klasöre `run-explorer-lock.vbs` dosyasının kısayolunu koyun.
 - Varsayılan şifre `1234`'tür.
 - Uygulamayı durdurmak için konsolda `Ctrl+C` tuşlarına basın. Arka planda çalışıyorsa `python.exe` işlemini Görev Yöneticisi'nden sonlandırın.
 
