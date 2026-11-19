@@ -28,14 +28,13 @@
     <a href="#features">Features</a> •
     <a href="#tech">Tech</a> •
     <a href="#setup">Setup</a> •
+    <a href="#gallery">Gallery</a> •
     <a href="#license">License</a>
   </p>
 
   <br />
   <br />
 </div>
-
-<img src="preview.jpg" width="100%" />
 
 ## <a id="warning"></a> ⚠️ Warning
 
@@ -91,6 +90,7 @@ After you enter the correct password, you can use File Explorer freely. Protecti
 ### Usage
 
 - Run `run.bat` to start the app with a console window, or `run-explorer-lock.vbs` to start it in the background.
+- `run-explorer-lock.vbs` starts the app from the `C:\explorer-lock` folder, so clone the project there to use it. To start the app automatically when Windows starts, press `Win+R`, type `shell:startup` and put a shortcut to `run-explorer-lock.vbs` in the folder that opens.
 - The default password is `1234`.
 - To stop the app, press `Ctrl+C` in the console. If it runs in the background, end the `python.exe` process from Task Manager.
 
@@ -105,6 +105,10 @@ class Config:
     LOCKOUT_TIME = 60                 # Initial lockout duration in seconds
     GRACE_PERIOD = 300                # Authorized session duration in seconds
 ```
+
+## <a id="gallery"></a> 🖼️ Gallery
+
+<img src="preview.jpg" />
 
 ## <a id="license"></a> 📄 License
 

@@ -28,14 +28,13 @@
     <a href="#features">Özellikler</a> •
     <a href="#tech">Teknolojiler</a> •
     <a href="#setup">Kurulum</a> •
+    <a href="#gallery">Galeri</a> •
     <a href="#license">Lisans</a>
   </p>
 
   <br />
   <br />
 </div>
-
-<img src="preview.jpg" width="100%" />
 
 ## <a id="warning"></a> ⚠️ Uyarı
 
@@ -91,6 +90,7 @@ Doğru şifreyi girdikten sonra Dosya Gezgini'ni özgürce kullanabilirsiniz. So
 ### Kullanım
 
 - Uygulamayı konsol penceresiyle başlatmak için `run.bat`, arka planda başlatmak için `run-explorer-lock.vbs` dosyasını çalıştırın.
+- `run-explorer-lock.vbs` uygulamayı `C:\explorer-lock` klasöründen başlatır, bu yüzden kullanmak için projeyi bu klasöre klonlayın. Uygulamanın Windows açılırken otomatik başlaması için `Win+R` tuşlarına basın, `shell:startup` yazın ve açılan klasöre `run-explorer-lock.vbs` dosyasının kısayolunu koyun.
 - Varsayılan şifre `1234`'tür.
 - Uygulamayı durdurmak için konsolda `Ctrl+C` tuşlarına basın. Arka planda çalışıyorsa `python.exe` işlemini Görev Yöneticisi'nden sonlandırın.
 
@@ -105,6 +105,10 @@ class Config:
     LOCKOUT_TIME = 60                 # Initial lockout duration in seconds
     GRACE_PERIOD = 300                # Authorized session duration in seconds
 ```
+
+## <a id="gallery"></a> 🖼️ Galeri
+
+<img src="preview.jpg" />
 
 ## <a id="license"></a> 📄 Lisans
 
